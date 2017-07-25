@@ -1,9 +1,10 @@
 # Online Crowdsourcing 
 This is an implementation of the paper 
-
+```
   Lean Crowdsourcing: Combining Humans and Machines in an Online System ([pdf](http://vision.caltech.edu/~sbranson/online_crowdsourcing/online_crowdsourcing_cvpr2017.pdf)) 
   Steve Branson, Grant Van Horn, Pietro Perona
   CVPR 2017
+```
 
 It contains code for annotating images with class, bounding box, and part labels, interfacing with Amazon Mechanical Turk, combining worker labels while modeling worker skill, training up computer vision classifiers and detectors interactively, and combined human/computer prediction.
 
@@ -15,16 +16,16 @@ This is a simple example to collect datasets for binary or multiclass classifica
 You will need an AWS ACCESS KEY for paying for Amazon Mechanical Turk services.  See http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.htm and set AWS_ACCESS_KEY and AWS_SECRET_ACCESS_KEY in keys.json.  
 
 Suppose you want to collect a dataset of images of object classes, such as scorpion, beaker, beagle, etc.  A common approach is to download candidate images using an image search engine, then using Mechanical Turk to filter the results.  If you want to automatically download images from Flickr, see https://www.flickr.com/services/api/misc.api_keys.html and set FLICKR_API_KEY and FLICKR_API_SECRET_KEY in keys.json.  The following code will download Flickr images of scorpions into the folder output/scorpion/flickr:
-
+```
   import json
   import os
   from crowdsourcing.util.image_search import *
   with open('keys.json') as f: keys = json.load(f)
   image_folder = os.path.join('output', 'scorpion', 'flickr')
   FlickrImageSearch('scorpion', image_folder, keys.FLICKR_API_KEY, FLICKR_API_SECRET_KEY, max_photos=MAX_PHOTOS)
-
+```
 You can obtain annotated results using
-
+```
   from crowdsourcing.interfaces.mechanical_turk import *
   from crowdsourcing.annotation_types.classification import *
   from crowdsourcing.util.tensorflow_features import *
@@ -35,7 +36,7 @@ You can obtain annotated results using
   dataset.scan_image_directory(os.path.join(image_folder, 'images'))
   crowdsource = MTurkCrowdsourcer(dataset, keys.AWS_ACCESS_KEY, keys.AWS_SECRET_ACCESS_KEY, HOST, output_folder, sandbox=False, hit_params = INSTRUCTIONS, thumbnail_size = (100,100), online=True) 
   crowdsource.run()
-
+```
 where HOST is the host name of your computer (it will be used to host a web server for mturk tasks).  The variable INSTRUCTIONS contains optional info to present in the MTurk annotation GUI.  The parameters learn_worker_params and learn_image_params enable modeling of worker skill and image difficulty in the model.  The parameter online enables online crowdsourcing (using a variable number of workers per image.  One can disable computer vision by omitting the computer_vision_predictor parameter.
 
 ## Collecting Bounding Box Annotations
@@ -45,7 +46,7 @@ This is a simple example to collect datasets for annotating bounding boxes aroun
 You will need an AWS ACCESS KEY for paying for Amazon Mechanical Turk services.  See http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.htm and set AWS_ACCESS_KEY and AWS_SECRET_ACCESS_KEY in keys.json.
 
 The following example obtains bounding boxes around pedestrians in a dataset of images:
-
+```
   from crowdsourcing.interfaces.mechanical_turk import *
   from crowdsourcing.annotation_types.bbox import *
   with open('keys.json') as f: keys = json.load(f)
@@ -54,11 +55,12 @@ The following example obtains bounding boxes around pedestrians in a dataset of 
   dataset.scan_image_directory(IMAGE_DIR)
   crowdsource = MTurkCrowdsourcer(dataset, keys.AWS_ACCESS_KEY, keys.AWS_SECRET_ACCESS_KEY, HOST, OUTPUT_FOLDER, sandbox=FALSE,
                                   hit_params = PARAMS, online = True, thumbnail_size = (100,100))
+```
 
 # Generating Results From The CVPR paper
 
 See the file experiments/generate_plots.py to generate results from the CVPR 2017 paper.  In this case, we first obtained an excessive amount of mturk annotations for each image, then simulated results where a subset of annotations are used.  The following code will run experiments for binary classification, bounding box annotation, and part annotation, comparing a wide variety of baselines and lesioned versions of the model:
-
+```
   import sys
   import os
   from crowdsourcing.interfaces.simulator import *
@@ -83,5 +85,6 @@ See the file experiments/generate_plots.py to generate results from the CVPR 201
   full_dataset = CrowdDatasetBBox(computer_vision_predictor=dt, debug=2)
   full_dataset.load('data/bbox/pedestrians/pedestrians.json')
 RunSimulatedExperiments(full_dataset, ALL_METHODS, 'bbox/pedestrians', ALL_PLOTS, title='Caltech Pedestrians', num_rand_perms=RAND_PERMS, force_compute=True)
+```
   
 
