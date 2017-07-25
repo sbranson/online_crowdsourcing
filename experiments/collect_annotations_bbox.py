@@ -21,10 +21,12 @@ USE_MTURK = False#True
 ONLINE = True
 WORKERS_PER_IMAGE = 0
 
+with open('keys.json') as f: keys = json.load(f)
+
 # Amazon account information for paying for mturk tasks, see 
 # http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.htm
-AWS_ACCESS_KEY = 'AKIAJKKZFJJQTDBSF4GA'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY = keys.AWS_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY = keys.AWS_SECRET_ACCESS_KEY
 SANDBOX = False
 
 HOST = 'sbranson.no-ip.org'

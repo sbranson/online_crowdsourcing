@@ -2,6 +2,7 @@ import numpy as np
 import os
 import sys
 import matplotlib.pyplot as plt
+import json
 from mpl_toolkits.mplot3d import Axes3D
 
 #sys.path.append(os.path.join(os.path.dirname(__file__),"../"))
@@ -21,15 +22,17 @@ USE_MTURK = True
 ONLINE = True
 WORKERS_PER_IMAGE = 0
 
+with open('keys.json') as f: keys = json.load(f)
+
 # Amazon account information for paying for mturk tasks, see 
 # http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.htm
-AWS_ACCESS_KEY = 'AKIAJKKZFJJQTDBSF4GA'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY = keys.AWS_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY = AWS_SECRET_ACCESS_KEY
 SANDBOX = False
 
 # API key for Flickr image search, see https://www.flickr.com/services/api/misc.api_keys.html
-FLICKR_API_KEY = 'f01b7d5c2327abfa71eb9add338465da'
-FLICKR_API_SECRET_KEY = '7d3871fa08b7d4a8'
+FLICKR_API_KEY = keys.FLICKR_API_KEY
+FLICKR_API_SECRET_KEY = keys.FLICKR_API_SECRET_KEY
 MAX_PHOTOS = 4000
 
 HOST = 'sbranson.no-ip.org'
