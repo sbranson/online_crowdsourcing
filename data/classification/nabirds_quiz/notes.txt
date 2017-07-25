@@ -1,0 +1,65 @@
+This data comes from the quiz experiments that we ran for the CVPR'15 paper. 
+Each quiz was comprised of 10 images where the user was asked to identifier the bird. 
+The user could either type the name of the bird (using an autocomplete box) or they could
+scroll through a gallery. A quiz contained images from either the Shorebird family or the 
+Sparrow family.
+
+There is a total of 25,510 annotations across 6,623 images.
+
+image_labels.json is an array:
+
+[{
+   'answer': u'Swamp Sparrow',    # The user's answer
+   'gt_answer': u'Song Sparrow',  # The ground truth answer
+   'image_id': u'c800e50a-3e46-45e1-9d98-80f5c5961285', 
+   'time_end': 1414703371182L,
+   'time_start': 1414703354475L,
+   'vibe_url': u'https://s3.amazonaws.com/vibe-content/photos/c800e50a3e4645e19d9880f5c5961285.jpg',
+   'worker_id': u'A2KPT0PEUEXCC4',
+   'worker_ip': u'99.126.128.183',
+   'worker_type': 'mturker' # either 'cturker' or 'mturker'
+ }
+ ...]
+ 
+
+Python notes for creating this file:
+
+from pymongo import MongoClient
+conn = MongoClient()
+db = conn.cvpr14
+
+tasks = [t for t in db.label_tasks.find()]
+
+label_task_to_image_ids = {}
+for t in tasks:
+  label_task_to_image_ids[t['_id']] = t['images']
+
+worker_types = ['cturker', 'mturker']
+
+per_image_results = []
+for worker_type in worker_types:
+  results = [r for r in db.label_task_results.find({'worker_type' : worker_type})]
+  
+  for r in results:
+    
+    images = label_task_to_image_ids[r['label_task']]
+    
+    for image_id, answer in zip(images, r['answers']):
+      
+      per_image_results.append({
+        
+        'answer' : answer['user_answer'],
+        'gt_answer' : answer['answer'],
+        'image_id' : image_id,
+        'vibe_url' : "https://s3.amazonaws.com/vibe-content/photos/%s.jpg" % (image_id.replace("-", ""),),
+        'worker_id' : r['user_id'],
+        'worker_type' : worker_type,
+        'worker_ip' : r['user_ip'],
+        'time_start' : answer['time_start'],
+        'time_end' : answer['time_end'],
+        
+      })
+
+import json
+with open('image_labels.json', 'w') as f:
+    json.dump(per_image_results, f)

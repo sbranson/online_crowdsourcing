@@ -1,0 +1,13 @@
+the file class_labels_to_annotations.json is a dictionary with the following format:
+
+{
+  "Blue Jay" : [ {
+     'answer': 1, # The worker answer
+     'gt_answer': 1, # The ground truth answer
+     'image_id': u'163012',
+     'image_url': u'http://s3.amazonaws.com/visipedia/images/163012/medium.jpg',
+     'vibe_id': u'591afb46-6f8d-4ce5-885e-78cffe640df6',
+     'vibe_url': u'https://s3.amazonaws.com/vibe-content/photos/591afb466f8d4ce5885e78cffe640df6.jpg',
+     'worker_id': u'801'
+   }, ...]
+}

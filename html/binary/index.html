@@ -1,0 +1,414 @@
+<html>
+<head>
+
+<script language=javascript type='text/javascript'>
+
+<!-- Insert HIT Parameters Here -->
+
+  function synch_inputs_to_assignment_answers() {
+    if(typeof(gParameters.answers) != "undefined" && gParameters.answers) {
+      for(var i in gParameters.answers) {
+        var input_elements = document.getElementsByName(i);
+        if(input_elements) {
+          for(var j = 0; j < input_elements.length; j++) {
+            input_elements[j].value = gParameters.answers[i];
+          }
+        }
+      }
+      synchToInputs();
+    }
+  }
+
+  if(typeof gParameters == "undefined") {
+    gParameters = new Object();
+    gParameters.object_name = 'Indigo Bunting';
+    gParameters.wikipedia_name = 'http://en.wikipedia.org/wiki/Indigo_Bunting';
+    gParameters.example_image_urls = ["http://s3.amazonaws.com/visipedia/images/14535/thumb.jpg?1263959734",
+       "http://s3.amazonaws.com/visipedia/images/14537/thumb.jpg?1263959744",
+       "http://s3.amazonaws.com/visipedia/images/14564/thumb.jpg?1263959873",
+       "http://s3.amazonaws.com/visipedia/images/14575/thumb.jpg?1263959923",
+       "http://s3.amazonaws.com/visipedia/images/14584/thumb.jpg?1263959960"];
+    gParameters.image_ids = [11598,11574,11577,11590,11576,11601,11589,11592,11575,11584,
+          11582,11581,11573,11579,11600,11587,11604,11591,11588,11572,11599,11597,11585,11602,
+          11605,6518,11595,11594,11583,11593,14538,11580,11580,11586,11596,11603,11578];
+    gParameters.image_thumb_urls = [];
+    gParameters.image_urls = [];
+    for(var i = 0; i < gParameters.image_ids.length; i++) {
+      var id = gParameters.image_ids[i];
+      gParameters.image_thumb_urls[id] = "http://s3.amazonaws.com/visipedia/images/"+id+"/thumb.jpg";
+      gParameters.image_urls[id] = "http://s3.amazonaws.com/visipedia/images/"+id+"/medium.jpg";
+    }
+  }
+  g_images = [];
+  g_boxes = [];
+
+  function getAbsolutePosition(element) {
+    var top = 0, left = 0;
+    do {
+        top += element.offsetTop  || 0;
+        left += element.offsetLeft || 0;
+        element = element.offsetParent;
+    } while(element);
+
+    return {
+        top: top,
+        left: left
+    };
+  };
+  function hideExtended() {
+    document.getElementById('extended').style.display = 'none';
+    document.getElementById('extendedlink').style.display = 'block';
+  }
+  function showExtended() {
+    document.getElementById('extended').style.display = 'block';
+    document.getElementById('extendedlink').style.display = 'none';
+  }
+  function showFeedback() {
+    document.getElementById('feedbackform').style.display = 'block';
+    document.getElementById('feedbacklink').style.display = 'none'; 
+  }
+  function selImg(id) {
+    var boxID = "box" + id;
+    var imgID = "img" + id;
+    var oldVal = document.getElementById(boxID).value;
+    document.getElementById(boxID).value = oldVal == 1 ? 0 : 1;
+    document.getElementById(imgID).className = oldVal == 1 ? "imgcell" : "imgcell selected";
+    hoverImg(id);
+  }
+  function hoverImg(id) {
+    var timg = document.getElementById("img" + id);
+    var img = document.getElementById("hoverImage");
+    var imgt = document.getElementById("hoverImageThumb");
+    var dimg = document.getElementById("hoverImageDiv");
+    var p = getAbsolutePosition(timg);
+    img.style.display = 'none';
+    img.onload = function() {
+      img.style.display = 'inline';
+      imgt.style.display = 'none';
+    }
+    dimg.className = document.getElementById("box" + id).value==1 ? "imgcell selected" : "imgcell";
+    img.src = gParameters.image_urls[id];
+    imgt.src = gParameters.image_thumb_urls[id];
+    imgt.style.display = 'inline';
+    img.width = 500;
+    imgt.width = 500;
+    dimg.style.left = p.left + timg.clientWidth/2 - 500/2;
+    dimg.style.top = p.top + timg.clientHeight/2 - 500/2;
+    dimg.style.display = 'inline';
+  }
+  function selectAll(val) {
+    var boxes = document.getElementsByClassName("hidbox");
+    for (var i=0; i<boxes.length; i++) {
+      boxes[i].value = val;
+    }
+    var cells = document.getElementsByClassName("imgcell");
+    for (var i=0; i<cells.length; i++) {
+      cells[i].className = val == 0 ? "imgcell" : "imgcell selected";
+    }
+  }
+  function synchToInputs() {
+    var boxes = document.getElementsByClassName("hidbox");
+    for (var i=0; i<boxes.length; i++) {
+      if(boxes[i].id && boxes[i].id.length > 3) {
+        var id = "img" + boxes[i].id.substring(3);
+        var td = document.getElementById(id);
+        if(td)
+          td.className = boxes[i].value == 0 ? "imgcell" : "imgcell selected";
+      }
+    }
+  }
+</script>
+<style type="text/css">
+  body {
+    font: normal 1em Verdana, Arial, sans-serif;
+    margin: 0 7px 0 5px;
+    padding: 5px;
+  }
+  h1 {
+    font-size: 120%;
+    margin: 0;
+    padding: 4px 0;
+  }
+  p {
+    margin: 0;
+    padding: 2px 0;
+  }
+  .infobox {
+    position: relative;
+    right: 5px;
+    display: block;
+    width: 100%;
+    background-color: #f0f6f9;
+    border: 1px solid #336699;
+    padding: 5px;
+    margin-bottom: 5px;
+  }
+  #hoverImage {
+    pointer-events:none;
+  }
+  #hoverImageThumb {
+    pointer-events:none;
+  }
+  #hoverImageDiv {
+    pointer-events:none;
+    position: absolute;
+    display: none;
+  }
+  #gallery {
+    margin: 10px 0px;
+    padding: 0;
+    font-size: 15px;
+  }
+  #gallery tr {
+    margin: 0;
+    padding: 0;
+  }
+  #gallery td.imgcell {
+    background-color: #CCC;
+    width: 100px;
+    height: 100px;
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
+    text-align: center;
+    border: 4px solid #CCC;
+    cursor: pointer;
+  }
+  #gallery td.imgcell:hover {
+    border: 4px solid #000;
+  }
+  #gallery td.imgcell.selected {
+    background-color: #9ED695;
+    border: 4px solid #669933;
+  }
+  #gallery td.imgcell.selected:hover {
+    border: 4px solid #669933;
+  }
+  #hoverImageDiv.imgcell {
+    background-color: #CCC;
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
+    text-align: center;
+    border: 10px solid #CCC;
+    cursor: pointer;
+  }
+  #hoverImageDiv.imgcell.selected {
+    background-color: #9ED695;
+    border: 10px solid #669933;
+  }
+</style>
+</head>
+
+<body onload="synch_inputs_to_assignment_answers()" >
+<div id="brief" class="infobox">
+  Click on images belonging to the category <strong><script>document.write(gParameters.object_name);</script></strong><script>if(gParameters.definition) document.write(": <i>" + gParameters.definition + "</i>");</script>. Select images only if:
+  <ul>
+    <li>The image contains at least one <script>document.write(gParameters.object_name)</script>; it's ok to have other objects
+    <li>They are real photos and not paintings or drawings</script></li>
+    <li>The <script>document.write(gParameters.object_name);</script> is clear/big enough to recognize</li>
+  </ul>
+  Why do we ask you to do this? We used a search engine to find potential images of the category <script>document.write(gParameters.object_name);</script>
+  <script>if(gParameters.wikipedia_url) document.write(' (read more on <a href='+gParameters.wikipedia_url+'>Wikipedia</a>)');</script>. Some images are irrelevant; 
+  you will help us identify the images that do in fact contain at least one <script>document.write(gParameters.object_name);</script>.
+</div>
+<div id="examples" class="infobox">
+  <center>
+    <script> if(gParameters.example_image_urls) document.write('<h1>Example images of ' + gParameters.object_name + '</h1>')</script>
+    <table>
+      <tr>
+	<script>
+	  for(var i = 0; gParameters.example_image_urls && i < gParameters.example_image_urls.length; i++) 
+            document.write('<td><img height="240" src="'+gParameters.example_image_urls[i]+'"></td>');	
+	</script>
+      </tr>
+    </table>
+    <p>
+      Click to select images below which you think contain <script>document.write(gParameters.object_name);</script>.<br/>
+      Remember that the color of the <script>document.write(gParameters.object_name);</script> in a photo is sometimes slightly different from the illustrations.
+    </p>
+  </center>
+</div>
+<div id="extendedlink" class="infobox">
+  <center><a href="javascript: showExtended();">Click here to view detailed instructions.</a> 
+  Please read at least once.</center>
+</div>
+<div id="extended" class="infobox" style="display: none;">
+  <h1>Detailed Instructions</h1>
+  <p>
+    These instructions discuss an example case where we used a search engine
+    to find images of the bird species called <strong>Cardinal</strong>. However,
+    the rules outlined here can also be applied to the task you were asked to do above.
+  </p>
+  <p>
+    Here are some examples of Cardinals:
+  </p>
+  <center>
+    <table>
+      <tr>
+        <td width="240" height="240"><img src="http://s3.amazonaws.com/visipedia/images/203037/small.jpg"/></td>
+        <td width="240" height="240"><img src="http://s3.amazonaws.com/visipedia/images/203038/small.jpg"/></td>
+        <td width="240" height="240"><img src="http://s3.amazonaws.com/visipedia/images/203039/small.jpg"/></td>
+      </tr>
+    </table>
+  </center>
+  <p>
+    The following criteria should be fulfilled for the images you select:
+  </p>
+  <ul>
+    <li>The image contains at least one Cardinal.</li>
+    <li>The cardinal should be clearly visible (and not be so small that you can barely see it).</li>
+    <li>It should be a photo of a real cardinal, and not a drawing or cartoon.</li>
+  </ul>
+  <p>
+    Below are some images that <strong>should be</strong>
+    selected, since they look like they fulfill the criteria.
+  </p>
+  <center>
+    <table width="500" style="border: 1px solid #336699;">
+      <tr>
+        <td width="100" height="100"><img src="http://s3.amazonaws.com/visipedia/images/19344/thumb.jpg"/></td>
+        <td>
+          This is a good example, and should be selected, because the Cardinal is clearly visible.
+        </td>
+      </tr>
+      <tr>
+        <td width="100" height="100"><img src="http://s3.amazonaws.com/visipedia/images/19354/thumb.jpg"/></td>
+        <td>
+          Although the Cardinal is pretty small, you can still make out some distinctive features
+          (such as the color and the black region around the beak) that lead you to believe
+          that it's a Cardinal. You can select it.
+        </td>
+      </tr>
+      <tr>
+        <td width="100" height="100"><img src="http://s3.amazonaws.com/visipedia/images/19148/thumb.jpg"/></td>
+        <td>
+          This is a close up of a Cardinal face. This is fine, you can select images like this one,
+          even if the whole bird isn't visible.
+        </td>
+      </tr>
+    </table>
+  </center>
+  <p>
+    The following images should <strong>not</strong> be selected because they don't fulfill the criteria.
+  </p>
+  <center>
+    <table width="500" style="border: 1px solid #336699;">
+      <tr>
+        <td width="100" height="100"><img src="http://s3.amazonaws.com/visipedia/images/19389/thumb.jpg"/></td>
+        <td>
+          Shows a helmet with a <strong>cartoon or drawing</strong> of a Cardinal. Don't select it,
+          only select photos of the real thing.
+        </td>
+      </tr>
+      <tr>
+        <td width="100" height="100"><img src="http://s3.amazonaws.com/visipedia/images/19367/thumb.jpg"/></td>
+        <td>
+          An image of a bug, not the bird species Cardinal, so don't select it.
+        </td>
+      </tr>
+      <tr>
+        <td width="100" height="100"><img src="http://s3.amazonaws.com/visipedia/images/19386/thumb.jpg"/></td>
+        <td>
+          There seems to be a bird in the tree, but it is so small that you cannot
+          see if it even looks like a Cardinal. Don't select it.
+        </td>
+      </tr>
+      <tr>
+        <td width="100" height="100"><img src="http://s3.amazonaws.com/visipedia/images/19165/thumb.jpg"/></td>
+        <td>
+          This is a toy that resembles a Cardinal, but it is not a real bird. Don't select it.
+        </td>
+      </tr>
+    </table>
+  </center>
+</div>
+  <p>
+    You will only get paid if you do a careful job in selecting the images. We will double check
+    some of your jobs to make sure you select images that fulfill the criteria.
+  </p>
+  <p>
+    <a href="javascript: hideExtended();">Click here to hide detailed instructions.</a>
+  </p>
+</div>
+<script>
+function getParameterByName(name, url) {
+    if (!url) {
+      url = window.location.href;
+    }
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+  if(getParameterByName('turkSubmitTo'))
+    document.write('<form action="'+getParameterByName('turkSubmitTo')+(gParameters.is_mturk_hit ? '/mturk/externalSubmit' : '')+'" method="post">');
+  else
+    document.write('<form>');
+  if(getParameterByName('assignmentId'))
+    document.write('<input type="hidden" name="assignmentId" id="assignmentId" value="' + getParameterByName('assignmentId') + '">');
+  if(getParameterByName('workerId'))
+    document.write('<input type="hidden" name="workerId" id="workerId" value="' + getParameterByName('workerId') + '">');
+  if(getParameterByName('hitId'))
+    document.write('<input type="hidden" name="hitId" id="hitId" value="' + getParameterByName('hitId') + '">');
+  if(getParameterByName('hitTypeId'))
+    document.write('<input type="hidden" name="hitTypeId" id="hitTypeId" value="' + getParameterByName('hitTypeId') + '">');
+</script>
+<div>
+<div id="hoverImageDiv">
+  <img id="hoverImage">
+  <img id="hoverImageThumb">
+</div>
+<center>
+<table id="gallery" cellpadding="0" cellspacing="5">
+  <tr>
+    <td colspan="6">
+      <input type="button" value="Select all" id="selectall" onclick="javascript: selectAll(1);">
+      <input type="button" value="Select none" id="selectnone" onclick="javascript: selectAll(0);">
+      Select images by clicking on them so that a <span style="color: #408433">green</span> 
+      border appears.
+    </td>
+  </tr>
+  <tr>
+    <script>
+      var img_count = 0;
+      for(var i = 0; i < gParameters.image_ids.length; i++) {
+        var id = gParameters.image_ids[i];
+	document.write('<td id="img' + id + '" class="imgcell" onmouseleave="javascript: document.getElementById(\'hoverImageDiv\').style.display=\'none\';" onmouseenter="javascript: hoverImg(' + id + ');" onclick="javascript: selImg(' + id + ');">\n');
+        document.write('<img src="' + gParameters.image_thumb_urls[id] + '">\n');
+        document.write('<input type="hidden" name="img' + id + '" id="box' + id + '" value="0" class="hidbox"/>\n</td>');
+        img_count++;
+        if((img_count % 6) == 0 && img_count < gParameters.image_ids.length)
+	  document.write('</tr><tr>');
+      }
+    </script>
+  </tr>
+  <tr>
+    <td colspan="6">
+      <input type="button" value="Select all" id="selectall" onclick="javascript: selectAll(1);">
+      <input type="button" value="Select none" id="selectnone" onclick="javascript: selectAll(0);">
+      Select images by clicking on them so that a <span style="color: #408433">green</span> 
+      border appears.
+    </td>
+  </tr>
+</table>
+</center>
+<div id="feedbacklink" class="infobox">
+  <center><a href="javascript: showFeedback();">Click here to provide feedback on this HIT.</a> 
+  (Will expand this section to show a form.)</center>
+</div>
+<div id="feedbackform" class="infobox" style="display: none;">
+  <center>
+  If you have any comments, error reports or suggestions about our HIT, 
+  please provide it in the box below. Thank you! <br/>
+	<textarea name="feedback" rows="8" cols="60"></textarea>
+	</center>
+</div>
+<div id="submitbox" class="infobox">
+  <center><input id="submit_button" name="commit" type="submit" value="Submit Selections" /></center>
+</div>
+</form>
+</body>
+</html>

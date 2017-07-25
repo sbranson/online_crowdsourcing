@@ -1,0 +1,8 @@
+pyyaml
+numpy
+Pillow
+boto
+scipy
+scikit-learn
+matplotlib
+filelock
