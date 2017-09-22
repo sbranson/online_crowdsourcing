@@ -19,6 +19,20 @@ BATCH_SIZE : 32
 # The model architecture to use.
 MODEL_NAME : 'inception_v3'
 
+
+# Image Processing
+INPUT_SIZE : 299
+IMAGE_MEAN : 128
+IMAGE_STD : 128
+MAINTAIN_ASPECT_RATIO : false
+AUGMENT_IMAGE : false
+RANDOM_FLIP : false
+RANDOM_BBOX_SHIFT : false
+MAX_BBOX_COORD_SHIFT : 0.0
+RANDOM_CROP : false
+DO_RANDOM_BBOX_SHIFT : 0.0
+
+
 # END: Dataset Info
 #################################################
 # Image Processing and Augmentation 

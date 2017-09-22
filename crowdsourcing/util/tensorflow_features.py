@@ -16,7 +16,7 @@ MODEL_FILE_URL = 'http://vision.caltech.edu/~sbranson/online_crowdsourcing/multi
 
 
 class TensorFlowFeatureExtractor(object):
-  def __init__(self, checkpoint_path=None, config_file=None, layer='PreLogits', tfrecords_dir='tf_tmp', batch_size=1, model_name=None, dataset_name = 'dataset'): #layer='Mixed_7c'
+  def __init__(self, checkpoint_path=None, config_file=None, layer='PreLogits', tfrecords_dir='tf_tmp', batch_size=None, model_name=None, dataset_name = 'dataset'): #layer='Mixed_7c'
     self.checkpoint_path = checkpoint_path
     self.layer = layer
     self.tfrecords_dir = tfrecords_dir
@@ -75,6 +75,7 @@ class TensorFlowFeatureExtractor(object):
     tfrecords = [os.path.join(self.tfrecords_dir, f) for f in os.listdir(self.tfrecords_dir) if os.path.isfile(os.path.join(self.tfrecords_dir, f))]
     dfeats = extract_features(tfrecords, self.checkpoint_path, int(math.ceil(len(dataset)/float(self.cfg.BATCH_SIZE))), [self.layer], self.cfg)
     feats = dfeats[self.layer]
+    ids = [int(i) for i in dfeats['ids']]
     features = np.zeros((len(dataset), feats.shape[1]))
-    features[good_images] = feats
+    features[ids,:] = feats
     return features

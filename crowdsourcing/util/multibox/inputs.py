@@ -276,24 +276,18 @@ def input_nodes(
       image_with_bboxes = tf.image.draw_bounding_boxes(tf.expand_dims(image, 0), bboxes_to_draw)
       tf.summary.image('original_image', image_with_bboxes)
 
-    # Perturb the bounding box coordinates
-    r = tf.random_uniform([], minval=0, maxval=1, dtype=tf.float32)
-    do_perturb = tf.logical_and(tf.less(r, cfg.DO_RANDOM_BBOX_SHIFT), tf.greater(num_bboxes, 0))
-    xmin, ymin, xmax, ymax = tf.cond(do_perturb, 
-      lambda: distorted_shifted_bounding_box(xmin, ymin, xmax, ymax, num_bboxes, image_height, image_width, cfg.RANDOM_BBOX_SHIFT_EXTENT), 
-      lambda: tf.tuple([xmin, ymin, xmax, ymax])
-    ) 
-
     # Take a crop from the image
+    ip = cfg.IMAGE_PROCESSING
+    bbcfg = ip.RANDOM_CROP_CFG
     r = tf.random_uniform([], minval=0, maxval=1, dtype=tf.float32)
-    do_crop = tf.less(r, cfg.DO_RANDOM_CROP)
+    do_crop = tf.less(r, ip.DO_RANDOM_CROP)
     cropped_image, xmin, ymin, xmax, ymax, num_bboxes = tf.cond(do_crop,
       lambda: distorted_bounding_box_crop(image, image_height, image_width, xmin, ymin, xmax, ymax, num_bboxes,
-        min_object_covered = cfg.RANDOM_CROP_MIN_OBJECT_COVERED,
-        aspect_ratio_range = cfg.RANDOM_CROP_ASPECT_RATIO_RANGE,
-        area_range = cfg.RANDOM_CROP_AREA_RANGE,
-        max_attempts = cfg.RANDOM_CROP_MAX_ATTEMPTS,
-        minimum_area= cfg.RANDOM_CROP_MINIMUM_AREA
+        min_object_covered = .7,
+        aspect_ratio_range = (bbcfg.MIN_ASPECT_RATIO,bbcfg.MAX_ASPECT_RATIO),
+        area_range = (bbcfg.MIN_AREA,bbcfg.MAX_AREA),
+        max_attempts = bbcfg.MAX_ATTEMPTS,
+        minimum_area= 50
       ),
       lambda: tf.tuple([image, xmin, ymin, xmax, ymax, num_bboxes])
     )
@@ -303,7 +297,7 @@ def input_nodes(
     num_resize_cases = 4
     resized_image = apply_with_random_selector(
       cropped_image,
-      lambda x, method: tf.image.resize_images(x, size=[cfg.INPUT_SIZE, cfg.INPUT_SIZE], method=method),
+      lambda x, method: tf.image.resize_images(x, size=[ip.INPUT_SIZE, ip.INPUT_SIZE], method=method),
       num_cases=num_resize_cases
     )
 
@@ -316,17 +310,17 @@ def input_nodes(
 
     # Distort the colors
     r = tf.random_uniform([], minval=0, maxval=1, dtype=tf.float32)
-    do_color_distortion = tf.less(r, cfg.DO_COLOR_DISTORTION)
-    num_color_cases = 1 if cfg.COLOR_DISTORT_FAST else 4
+    do_color_distortion = tf.less(r, ip.DO_COLOR_DISTORTION)
+    num_color_cases = 1 if ip.COLOR_DISTORT_FAST else 4
     distorted_image = apply_with_random_selector(
       resized_image,
-      lambda x, ordering: distort_color(x, ordering, fast_mode=cfg.COLOR_DISTORT_FAST),
+      lambda x, ordering: distort_color(x, ordering, fast_mode=ip.COLOR_DISTORT_FAST),
       num_cases=num_color_cases)
     image = tf.cond(do_color_distortion, lambda: tf.identity(distorted_image), lambda: tf.identity(resized_image))
-    image.set_shape([cfg.INPUT_SIZE, cfg.INPUT_SIZE, 3])
+    image.set_shape([ip.INPUT_SIZE, ip.INPUT_SIZE, 3])
 
     # Randomly flip the image:
-    if cfg.DO_RANDOM_FLIP_LEFT_RIGHT:
+    if ip.DO_RANDOM_FLIP_LEFT_RIGHT:
       r = tf.random_uniform([], minval=0, maxval=1, dtype=tf.float32)
       do_flip = tf.less(r, 0.5)
       image = tf.cond(do_flip, lambda: tf.image.flip_left_right(image), lambda: tf.identity(image))

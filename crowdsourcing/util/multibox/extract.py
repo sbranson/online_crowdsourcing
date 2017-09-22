@@ -21,6 +21,7 @@ from create_tfrecords import _convert_to_example
 #from preprocessing import inputs
 import inputs
 import model
+import inception_v3
 
 def extract_features(tfrecords, checkpoint_path, num_iterations, feature_keys, cfg):
     """
@@ -35,7 +36,7 @@ def extract_features(tfrecords, checkpoint_path, num_iterations, feature_keys, c
 
         global_step = slim.get_or_create_global_step()
 
-        
+
         batched_images, batched_bboxes, batched_num_bboxes, image_ids, image_names = inputs.input_nodes(
             tfrecords=tfrecords,
             max_num_bboxes = cfg.MAX_NUM_BBOXES if hasattr(cfg,'MAX_NUM_BBOXES') else 0,
@@ -46,28 +47,43 @@ def extract_features(tfrecords, checkpoint_path, num_iterations, feature_keys, c
             min_after_dequeue=cfg.QUEUE_MIN,
             add_summaries = False,
             shuffle_batch = False,
-            cfg=cfg,
+            cfg=cfg
         )
 
-        arg_scope = nets_factory.arg_scopes_map[cfg.MODEL_NAME]()
+        with slim.arg_scope([slim.conv2d], 
+                            activation_fn=tf.nn.relu,
+                            normalizer_fn=slim.batch_norm,
+                            weights_regularizer=slim.l2_regularizer(0.00004),
+                            biases_regularizer=slim.l2_regularizer(0.00004)) as scope:
+            
+            batch_norm_params = {
+                'decay': cfg.MOVING_AVERAGE_DECAY,
+                'epsilon': 0.001,
+                'variables_collections' : [],
+                'is_training' : False
+            }
+            with slim.arg_scope([slim.conv2d], normalizer_params=batch_norm_params) as arg_scope:
 
-        with slim.arg_scope(arg_scope):
-            logits, end_points = nets_factory.networks_map[cfg.MODEL_NAME](
-                inputs=batched_images,
-                num_classes=cfg.NUM_CLASSES,
-                is_training=False
-            )
+                #arg_scope = nets_factory.arg_scopes_map[cfg.MODEL_NAME]()
 
-            predicted_labels = tf.argmax(end_points['Predictions'], 1)
+                with slim.arg_scope(arg_scope):
+                    features, end_points = inception_v3.inception_v3(batched_images, reuse=False, scope='InceptionV3', num_classes=cfg.NUM_CLASSES)
+                    #logits, end_points = nets_factory.networks_map[cfg.MODEL_NAME](
+                    #    inputs=batch_dict['inputs'],
+                    #    num_classes=cfg.NUM_CLASSES,
+                    #    is_training=False
+                    #)
+                    #
+                    #predicted_labels = tf.argmax(end_points['Predictions'], 1)
 
-        if 'MOVING_AVERAGE_DECAY' in cfg and cfg.MOVING_AVERAGE_DECAY > 0:
-            variable_averages = tf.train.ExponentialMovingAverage(
-                cfg.MOVING_AVERAGE_DECAY, global_step)
-            variables_to_restore = variable_averages.variables_to_restore(
-                slim.get_model_variables())
-            variables_to_restore[global_step.op.name] = global_step
-        else:
-            variables_to_restore = {v.name.split(':')[0]:v for v in slim.get_variables_to_restore()}
+                if 'MOVING_AVERAGE_DECAY' in cfg and cfg.MOVING_AVERAGE_DECAY > 0:
+                    variable_averages = tf.train.ExponentialMovingAverage(
+                        cfg.MOVING_AVERAGE_DECAY, global_step)
+                    variables_to_restore = variable_averages.variables_to_restore(
+                        slim.get_model_variables())
+                    variables_to_restore[global_step.op.name] = global_step
+                else:
+                    variables_to_restore = {v.name.split(':')[0]:v for v in slim.get_variables_to_restore()}
 
         saver = tf.train.Saver(variables_to_restore, reshape=True)
 
@@ -77,6 +93,8 @@ def extract_features(tfrecords, checkpoint_path, num_iterations, feature_keys, c
         fetches = []
         feature_stores = []
         for feature_key in feature_keys:
+            if not feature_key in end_points:
+              print("Requested feature %s not in model end points %s" % (feature_key,str(end_points.keys())))
             feature = tf.reshape(end_points[feature_key], [cfg.BATCH_SIZE, -1])
             num_elements = feature.get_shape().as_list()[1]
             feature_stores.append(np.empty([num_items, num_elements], dtype=np.float32))

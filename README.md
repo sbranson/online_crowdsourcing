@@ -59,7 +59,11 @@ The following example obtains bounding boxes around pedestrians in a dataset of 
 
 # Generating Results From The CVPR paper
 
-See the file experiments/generate_plots.py to generate results from the CVPR 2017 paper.  In this case, we first obtained an excessive amount of mturk annotations for each image, then simulated results where a subset of annotations are used.  The following code will run experiments for binary classification, bounding box annotation, and part annotation, comparing a wide variety of baselines and lesioned versions of the model:
+See the file experiments/generate_plots.py to generate results from the CVPR 2017 paper.  In this case, we first obtained an excessive amount of mturk annotations for each image, then simulated results where a subset of annotations are used.  
+
+You will first need to download image datasets used in the paper.  Download and extract the file http://vision.caltech.edu/~sbranson/online_crowdsourcing/data.tgz into the folder online_crowdsourcing, such that it produces the folder online_crowdsourcing/data.tgz.
+
+The following code will run experiments for binary classification, bounding box annotation, and part annotation, comparing a wide variety of baselines and lesioned versions of the model:
 ```
   import sys
   import os
